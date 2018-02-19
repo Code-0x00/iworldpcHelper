@@ -2,17 +2,25 @@
 #include<Windows.h>
 
 int main() {
-	HWND hGameWnd = FindWindow(L"RenderWindow_ClassName", L"√‘ƒ„ ¿ΩÁ");
+	//HMODULE hBase = GetModuleHandle(NULL);
+	DWORD offset[5] = { 0x8C,0x50,0x8,0xC,0x4 };
+	DWORD readAddr[6];
+	HWND hGameWnd = FindWindow(L"GBOXAPP", L"¿À¬˛◊Ø‘∞ 2.01");
 	if (hGameWnd == NULL) {
 		printf("Find handle. error code:%d\n", GetLastError());
 		return 0;
 	}
+	else {
+		printf("handle:%d\n", hGameWnd);
+	}
 	DWORD dPID = 0;
 	GetWindowThreadProcessId(hGameWnd, &dPID);
-
 	if (dPID == 0) {
 		printf("Get PID. error code: %d\n", GetLastError());
 		return 0;
+	}
+	else {
+		printf("pid:%d\n", dPID);
 	}
 	HANDLE hProcess = OpenProcess(
 		PROCESS_ALL_ACCESS,
@@ -23,85 +31,53 @@ int main() {
 		printf("Open Process. error code:%d\n", GetLastError());
 		return 0;
 	}
-	DWORD dBaseAddress = 0x00905A4D;
+	else {
+		printf("hprocess:%d\n", hProcess);
+	}
+	DWORD dBaseAddress = 0x29007BE0;
 	DWORD dReader = 0;
 	DWORD dSize = 0;
-	//HMODULE hBase = GetModuleHandle(L"iworldpc.exe");
-	//if (hBase == NULL) {
-	//	printf("%d\n", GetLastError());
-	//}
+
 	if (NULL == ReadProcessMemory(
 		hProcess,
-		//(LPVOID)(dBaseAddress+0x00971D7C+0x8C),
-		(LPVOID)(0x00E68000),
-		&dReader,
+		(LPVOID)(dBaseAddress),
+		&readAddr[0],
 		sizeof(DWORD),
 		&dSize
 	)) {
 		printf("Read memory. error code: %d\n", GetLastError());
 		return 0;
 	}
-	std::cout << dReader << "\n";
-	//return 0;
-	/*loop start*/
-	DWORD dReader0 = dReader;
-	DWORD dReader1 = 0;
-	ReadProcessMemory(
-		hProcess,
-		(LPVOID)(dReader0),
-		&dReader1,
-		sizeof(DWORD),
-		&dSize
-	);
-	std::cout << dReader1 << "\n";
-	/*loop end*/
-	return 0;
-	/*loop start*/
-	dReader0 = dReader1;
-	dReader1 = 0;
-	ReadProcessMemory(
-		hProcess,
-		(LPVOID)(dReader0 + 0x8),
-		&dReader1,
-		sizeof(DWORD),
-		&dSize
-	);
-	std::cout << dReader1 << "\n";
-	/*loop end*/
-	/*loop start*/
-	dReader0 = dReader1;
-	dReader1 = 0;
-	ReadProcessMemory(
-		hProcess,
-		(LPVOID)(dReader0 + 0xC),
-		&dReader1,
-		sizeof(DWORD),
-		&dSize
-	);
-	std::cout << dReader1 << "\n";
-	/*loop end*/
-	/*loop start*/
-	dReader0 = dReader1;
-	dReader1 = 0;
-	ReadProcessMemory(
-		hProcess,
-		(LPVOID)(dReader0 + 0x4),
-		&dReader1,
-		sizeof(DWORD),
-		&dSize
-	);
-	std::cout << dReader1 << "\n";
-	/*loop end*/
+	readAddr[0] = 0x29007BE0;
+	std::cout << readAddr[0] << "\n";
+
+	for (int i = 0; i < 5; i++) {
+		DWORD dBaseAddress = 0x29007BE0;
+		DWORD dReader = 0;
+		DWORD dSize = 0;
+
+		if (NULL == ReadProcessMemory(
+			hProcess,
+			(LPVOID)(readAddr[i]+offset[i]),
+			&readAddr[i+1],
+			sizeof(DWORD),
+			&dSize
+		)) {
+			printf("Read memory. error code: %d\n", GetLastError());
+			return 0;
+		}
+		std::cout << readAddr[i+1] << "\n";
+	}
+
 	return 0;
 	/*945804461=1*/
 	int n = 945804461;
 	WriteProcessMemory(
 		hProcess,
-		(LPVOID)(dReader0 + 0x4),
+		(LPVOID)(readAddr[4]),
 		&n,
 		sizeof(DWORD),
 		&dSize
 	);
-	
 	return 0;
 }
